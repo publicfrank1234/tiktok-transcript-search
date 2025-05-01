@@ -24,6 +24,7 @@ const SearchComponent = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Host: "search-api.virio.svc.cluster.local",
           },
           mode: "cors",
           credentials: "omit",
