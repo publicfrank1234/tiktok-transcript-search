@@ -1,5 +1,105 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import "./SearchComponent.css";
+
+const VideoPreview = ({ result }) => {
+  if (result.tiktok_url) {
+    // Extract video ID from TikTok URL
+    const videoId = result.tiktok_url.split("/video/")[1]?.split("?")[0];
+    if (!videoId)
+      return (
+        <div className="video-preview">
+          <div className="no-video">Invalid TikTok URL</div>
+        </div>
+      );
+
+    return (
+      <div className="video-preview">
+        <iframe
+          src={`https://www.tiktok.com/embed/v2/${videoId}?lang=en-US`}
+          className="video-player"
+          allowFullScreen
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          frameBorder="0"
+          title="TikTok video player"
+          loading="lazy"
+          sandbox="allow-scripts allow-same-origin allow-presentation"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="video-preview">
+      <div className="no-video">No preview available</div>
+    </div>
+  );
+};
+
+const Modal = ({ isOpen, onClose, children }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleEscape);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  // Render modal outside the main component hierarchy
+  return ReactDOM.createPortal(
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <button className="modal-close" onClick={onClose}>
+          ×
+        </button>
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+};
+
+const ResultText = ({ text, hook }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = (e) => {
+    e.stopPropagation(); // Stop event from bubbling up
+    setIsModalOpen(true);
+  };
+
+  return (
+    <div className="result-text-container">
+      <p className="result-text">{text}</p>
+      <button className="toggle-text-button" onClick={handleOpenModal}>
+        Read Full Transcript
+      </button>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="transcript-modal">
+          <h2>{hook}</h2>
+          <p>{text}</p>
+        </div>
+      </Modal>
+    </div>
+  );
+};
 
 const SearchComponent = () => {
   const [query, setQuery] = useState("");
@@ -24,20 +124,12 @@ const SearchComponent = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Accept: "application/json",
           },
-          mode: "cors",
-          credentials: "omit",
           body: JSON.stringify({ query }),
         }
       );
 
       if (!response.ok) {
-        if (response.status === 0) {
-          throw new Error(
-            "Network error - Unable to reach the search service. Please try again later."
-          );
-        }
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
           errorData.detail || `Search failed with status ${response.status}`
@@ -86,22 +178,10 @@ const SearchComponent = () => {
       <div className="results-container">
         {results.map((result) => (
           <div key={result.id} className="result-card">
-            <div className="video-preview">
-              {result.s3_url ? (
-                <video controls src={result.s3_url} className="video-player" />
-              ) : result.tiktok_url ? (
-                <iframe
-                  src={result.tiktok_url}
-                  className="video-player"
-                  allowFullScreen
-                />
-              ) : (
-                <div className="no-video">No video available</div>
-              )}
-            </div>
+            <VideoPreview result={result} />
             <div className="result-content">
               <h3 className="result-title">{result.hook}</h3>
-              <p className="result-text">{result.text}</p>
+              <ResultText text={result.text} hook={result.hook} />
               <div className="result-metrics">
                 <span title="Likes">👍 {result.likes.toLocaleString()}</span>
                 <span title="Comments">
@@ -127,6 +207,17 @@ const SearchComponent = () => {
                     className="link-button"
                   >
                     View on TikTok
+                  </a>
+                )}
+                {result.s3_url && (
+                  <a
+                    href={result.s3_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="link-button"
+                    title="Requires access permissions"
+                  >
+                    Download MP4
                   </a>
                 )}
                 {result.youtube_url && result.youtube_url !== "None" && (
