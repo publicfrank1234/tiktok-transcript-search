@@ -1,22 +1,27 @@
 .search-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 2rem;
 }
 
 .search-form {
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .search-input {
   flex: 1;
   padding: 0.75rem 1rem;
+  font-size: 1rem;
   border: 2px solid #e2e8f0;
   border-radius: 0.5rem;
-  font-size: 1rem;
-  min-width: 0; /* Prevents flex item from overflowing */
+  outline: none;
+  transition: border-color 0.2s;
+  background-color: white;
 }
 
 .search-input:focus {
@@ -34,8 +39,9 @@
   color: white;
   border: none;
   border-radius: 0.5rem;
-  font-weight: 500;
+  font-size: 1rem;
   cursor: pointer;
+  transition: all 0.2s;
   white-space: nowrap;
 }
 
@@ -50,30 +56,12 @@
 }
 
 .error-message {
+  color: #e53e3e;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
   background-color: #fff5f5;
-  border: 1px solid #feb2b2;
   border-radius: 0.5rem;
-  padding: 1rem;
-  margin: 1rem 0;
-  color: #c53030;
-}
-
-.error-message p {
-  margin: 0 0 1rem 0;
-}
-
-.error-message .error-help {
-  color: #4a5568;
-  font-size: 0.875rem;
-}
-
-.error-message ul {
-  margin: 0.5rem 0 0 1.5rem;
-  padding: 0;
-}
-
-.error-message li {
-  margin: 0.25rem 0;
+  text-align: center;
 }
 
 .no-results {
@@ -361,52 +349,4 @@
 
 .modal-content::-webkit-scrollbar-thumb:hover {
   background-color: #a0aec0;
-}
-
-/* Mobile Styles */
-@media (max-width: 640px) {
-  .search-form {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .search-input,
-  .search-button {
-    width: 100%;
-  }
-
-  .result-card {
-    margin: 1rem 0;
-  }
-
-  .result-metrics {
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .result-meta {
-    font-size: 0.75rem;
-  }
-
-  /* Adjust modal for mobile */
-  .modal-content {
-    padding: 4rem 1rem 2rem 1rem;
-  }
-
-  .transcript-modal h2 {
-    font-size: 1.5rem;
-    padding: 0 1rem;
-  }
-
-  .transcript-modal p {
-    font-size: 1rem;
-    padding: 0 1rem;
-  }
-
-  .modal-close {
-    top: 1rem;
-    right: 1rem;
-    width: 48px;
-    height: 48px;
-  }
 }

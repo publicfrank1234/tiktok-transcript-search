@@ -109,14 +109,17 @@ const SearchComponent = () => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    if (!query.trim()) {
+      setError("Please enter a search query");
+      return;
+    }
+
     setLoading(true);
     setError(null);
-    setResults([]);
 
     try {
-      console.log("Starting search request for:", query);
       const response = await fetch(
-        "https://tiktok-transcript-search-api.fly.dev/search",
+        "https://ad2c01419149347cdb584072cb931bf8-524830316.us-west-2.elb.amazonaws.com/search",
         {
           method: "POST",
           headers: {
@@ -126,23 +129,23 @@ const SearchComponent = () => {
         }
       );
 
-      console.log("Response status:", response.status);
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Search failed:", response.status, errorText);
-        throw new Error(`Search failed: ${response.status} ${errorText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.detail || `Search failed with status ${response.status}`
+        );
       }
 
       const data = await response.json();
-      console.log("Search results received:", data.length, "items");
-      setResults(data);
+      if (!data.results || !Array.isArray(data.results)) {
+        throw new Error("Invalid response format from server");
+      }
+
+      setResults(data.results);
     } catch (err) {
       console.error("Search error:", err);
-      setError(
-        err.message ||
-          "Failed to search. Please check your connection and try again."
-      );
+      setError(err.message);
+      setResults([]);
     } finally {
       setLoading(false);
     }
@@ -164,19 +167,7 @@ const SearchComponent = () => {
         </button>
       </form>
 
-      {error && (
-        <div className="error-message">
-          <p>{error}</p>
-          <p className="error-help">
-            If this persists, try:
-            <ul>
-              <li>Checking your internet connection</li>
-              <li>Refreshing the page</li>
-              <li>Using a different browser</li>
-            </ul>
-          </p>
-        </div>
-      )}
+      {error && <div className="error-message">{error}</div>}
 
       {results.length === 0 && !loading && !error && (
         <div className="no-results">
