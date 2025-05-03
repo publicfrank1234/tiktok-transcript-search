@@ -106,9 +106,14 @@ const SearchComponent = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [totalResults, setTotalResults] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const handleSearch = async (e, page = 1) => {
+    e?.preventDefault(); // Make preventDefault optional for pagination clicks
     if (!query.trim()) {
       setError("Please enter a search query");
       return;
@@ -118,16 +123,17 @@ const SearchComponent = () => {
     setError(null);
 
     try {
-      const response = await fetch(
-        "https://video-search.sitepilot.online/search",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ query }),
-        }
-      );
+      const response = await fetch("http://localhost:8003/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query,
+          page: page,
+          page_size: pageSize,
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -142,18 +148,30 @@ const SearchComponent = () => {
       }
 
       setResults(data.results);
+      setTotalResults(data.total_results);
+      setCurrentPage(data.current_page);
+      setHasNext(data.has_next);
+      setHasPrevious(data.has_previous);
     } catch (err) {
       console.error("Search error:", err);
       setError(err.message);
       setResults([]);
+      setHasNext(false);
+      setHasPrevious(false);
     } finally {
       setLoading(false);
     }
   };
 
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1) {
+      handleSearch(null, newPage);
+    }
+  };
+
   return (
     <div className="search-container">
-      <form onSubmit={handleSearch} className="search-form">
+      <form onSubmit={(e) => handleSearch(e, 1)} className="search-form">
         <input
           type="text"
           value={query}
@@ -235,6 +253,28 @@ const SearchComponent = () => {
           </div>
         ))}
       </div>
+
+      {results.length > 0 && (
+        <div className="pagination">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={!hasPrevious || loading}
+            className="pagination-button"
+          >
+            Previous
+          </button>
+          <span className="pagination-info">
+            Page {currentPage} of {Math.ceil(totalResults / pageSize)}
+          </span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={!hasNext || loading}
+            className="pagination-button"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };
