@@ -123,17 +123,20 @@ const SearchComponent = () => {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:8003/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query,
-          page: page,
-          page_size: pageSize,
-        }),
-      });
+      const response = await fetch(
+        "https://video-search.sitepilot.online/search",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query,
+            page: page,
+            page_size: pageSize,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
