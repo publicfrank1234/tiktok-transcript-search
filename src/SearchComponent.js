@@ -119,7 +119,7 @@ const SearchComponent = () => {
 
     try {
       const response = await fetch(
-        "http://ad2c01419149347cdb584072cb931bf8-524830316.us-west-2.elb.amazonaws.com/search",
+        "https://video-search.sitepilot.online/search",
         {
           method: "POST",
           headers: {
