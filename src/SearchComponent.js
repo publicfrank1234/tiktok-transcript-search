@@ -119,7 +119,7 @@ const SearchComponent = () => {
 
     try {
       const response = await fetch(
-        "https://ad2c01419149347cdb584072cb931bf8-524830316.us-west-2.elb.amazonaws.com/search",
+        "http://ad2c01419149347cdb584072cb931bf8-524830316.us-west-2.elb.amazonaws.com/search",
         {
           method: "POST",
           headers: {
